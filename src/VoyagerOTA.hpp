@@ -107,7 +107,7 @@ namespace Voyager {
     class GithubJSONParser : public Voyager::IParser<Voyager::HTTPResponseData, GithubReleaseModel> {
     public:
         GithubJSONParser() = default;
-        std::optional<GithubReleaseModel> parse(Voyager::HTTPResponseData responseData, int statusCode) override;
+        [[nodiscard]] std::optional<GithubReleaseModel> parse(Voyager::HTTPResponseData responseData, int statusCode) override;
     };
 
     template <typename T_PayloadModel>
@@ -130,6 +130,8 @@ namespace Voyager {
         explicit OTA(std::unique_ptr<IParser<T_ResponseData, T_PayloadModel>> parser, const String& currentVersion);
 
         explicit OTA(std::unique_ptr<IParser<T_ResponseData, T_PayloadModel>> parser);
+
+        void setCredentials(const String& projectId, const String& apiKey);
 
         void setParser(std::unique_ptr<IParser<T_ResponseData, T_PayloadModel>> parser);
 
@@ -186,6 +188,14 @@ Voyager::OTA<T_ResponseData, T_PayloadModel>::OTA(std::unique_ptr<IParser<T_Resp
 template <typename T_ResponseData, typename T_PayloadModel>
 Voyager::OTA<T_ResponseData, T_PayloadModel>::OTA(std::unique_ptr<IParser<T_ResponseData, T_PayloadModel>> parser)
     : _parser(std::move(parser)) {}
+
+template <typename T_ResponseData, typename T_PayloadModel>
+void Voyager::OTA<T_ResponseData, T_PayloadModel>::setCredentials(const String& projectId, const String& apiKey) {
+    this->setGlobalHeaders({
+        {"X-Project-Id", projectId},
+        {"X-API-KEY", apiKey},
+    });
+}
 
 template <typename T_ResponseData, typename T_PayloadModel>
 void Voyager::OTA<T_ResponseData, T_PayloadModel>::setParser(std::unique_ptr<IParser<T_ResponseData, T_PayloadModel>> parser) {
