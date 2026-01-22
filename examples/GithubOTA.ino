@@ -1,3 +1,6 @@
+#define __ENABLE_ADVANCED_MODE__ true
+#define CURRENT_FIRMWARE_VERSION "1.0.0"
+
 #include <WiFi.h>
 #include <VoyagerOTA.hpp>
 
@@ -17,15 +20,17 @@ void setup() {
     connectToWifi();
 
     std::unique_ptr<GithubJSONParser> parser = std::make_unique<GithubJSONParser>();
-    OTA<HTTPResponseData, GithubReleaseModel> ota(std::move(parser), "1.0.0");
+    OTA<HTTPResponseData, GithubReleaseModel> ota(std::move(parser), CURRENT_FIRMWARE_VERSION);
 
     // https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#:~:text=GET-,/repos/%7Bowner%7D/%7Brepo%7D/releases,-cURL
-    ota.setReleaseURL("https://api.github.com/repos/{owner}/{repo}/releases",
-                      {
-                          {"Authorization", "Bearer your-github-token"},
-                          {"X-GitHub-Api-Version", "2022-11-28"},
-                          {"Accept", "application/vnd.github+json"},
-                      });
+    std::vector<Header> releaseHeaders = {
+        {"Authorization", "Bearer your-github-token"},
+        {"X-GitHub-Api-Version", "2022-11-28"},
+        {"Accept", "application/vnd.github+json"},
+    };
+
+    // replace {owner} and {repo} with your github username and repo.......
+    ota.setReleaseURL("https://api.github.com/repos/{owner}/{repo}/releases", releaseHeaders);
 
     Serial.println("OTA Started....");
 
@@ -34,13 +39,14 @@ void setup() {
     if (release && ota.isNewVersion(release->version)) {
         Serial.println("New version available: " + release->version);
         Serial.println("Release name: " + release->name);
-        ota.setDownloadURL(release->browserDownloadUrl,
-                           {
-                               {"Authorization", "Bearer your-github-token..."},
-                               {"X-GitHub-Api-Version", "2022-11-28"},
-                               {"Accept", "application/octet-stream"},
-                           });
 
+        std::vector<Header> downloadHeaders = {
+            {"Authorization", "Bearer your-github-token..."},
+            {"X-GitHub-Api-Version", "2022-11-28"},
+            {"Accept", "application/octet-stream"},
+        };
+
+        ota.setDownloadURL(release->browserDownloadUrl, downloadHeaders);
         ota.performUpdate();
     } else {
         Serial.println("No updates available yet!");
