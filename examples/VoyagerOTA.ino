@@ -1,6 +1,13 @@
+
+// Development mode is for for staging environment builds for testing....
+// Make sure to always disable the [__ENABLE_DEVELOPMENT_MODE__] flag to false
+// while uploading the Binary to VoyagerOTA Platform as development builds are not
+// allowed....And by disabling it the build is treated as production build...
+#define __ENABLE_DEVELOPMENT_MODE__ true
+#define CURRENT_FIRMWARE_VERSION "1.0.0"
+
 #include <WiFi.h>
 #include <VoyagerOTA.hpp>
-
 using namespace Voyager;
 
 void connectToWifi() {
@@ -15,16 +22,15 @@ void connectToWifi() {
 void setup() {
     Serial.begin(9600);
     connectToWifi();
-    OTA<> ota("1.0.0");
+    OTA<> ota(CURRENT_FIRMWARE_VERSION);
 
-    ota.setEnvironment(PRODUCTION);
     ota.setCredentials("voyager-project-id-here....", "voyager-api-key-here...");
-
     auto release = ota.fetchLatestRelease();
 
     if (release && ota.isNewVersion(release->version)) {
         Serial.println("New version available: " + release->version);
         Serial.println("Changelog: " + release->changeLog);
+        ota.setDownloadURL(release->downloadURL);
         ota.performUpdate();
     } else {
         Serial.println("No updates available");
