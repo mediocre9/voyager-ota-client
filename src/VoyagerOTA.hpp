@@ -55,9 +55,9 @@
   #error VoyagerOTA requires the ArduinoJson library version 7.0 or above.
 #endif
 
-#define VOYAGER_OTA_VERSION "2.0.0"
+#define VOYAGER_OTA_VERSION "2.1.0"
 #define VOYAGER_OTA_VERSION_MAJOR 2
-#define VOYAGER_OTA_VERSION_MINOR 0
+#define VOYAGER_OTA_VERSION_MINOR 1
 #define VOYAGER_OTA_VERSION_PATCH 0
 
 // !Do NOT change....For Platform's Backend use only......
@@ -87,7 +87,7 @@ namespace Voyager {
     struct BaseModel {
         String version;
 
-        BaseModel(String v) : version(v) {}
+        explicit BaseModel(String v) : version(v) {}
     };
 
 #if __ENABLE_ADVANCED_MODE__
@@ -98,7 +98,7 @@ namespace Voyager {
         int size;
         int statusCode;
 
-        GithubReleaseModel(String version, String name, String publishedAt, String browserDownloadUrl, int size, int statusCode) : BaseModel(version) {
+        explicit GithubReleaseModel(String version, String name, String publishedAt, String browserDownloadUrl, int size, int statusCode) : BaseModel(version) {
             this->name = name;
             this->publishedAt = publishedAt;
             this->browserDownloadUrl = browserDownloadUrl;
@@ -115,10 +115,11 @@ namespace Voyager {
         int statusCode;
         String hash;
         int size;
+        String prettySize;
         String downloadURL;
         String message;
 
-        VoyagerReleaseModel(String version, String releaseId, String changeLog, String releasedDate, String status, int statusCode, String hash, int size, String downloadURL, String message = String()) : BaseModel(version) {
+        explicit VoyagerReleaseModel(String version, String releaseId, String changeLog, String releasedDate, String status, int statusCode, String hash, int size, String prettySize, String downloadURL, String message = String()) : BaseModel(version) {
             this->releaseId = releaseId;
             this->changeLog = changeLog;
             this->releasedDate = releasedDate;
@@ -126,6 +127,7 @@ namespace Voyager {
             this->statusCode = statusCode;
             this->hash = hash;
             this->size = size;
+            this->prettySize = prettySize;
             this->downloadURL = downloadURL;
             this->message = message;
         }
@@ -200,6 +202,8 @@ namespace Voyager {
         [[nodiscard]] const String& getCurrentVersion() const;
 
         [[nodiscard]] bool isNewVersion(const String& release);
+
+        [[nodiscard]] bool isCurrentVersion(const String& release);
 
         void performUpdate() override;
 
@@ -294,6 +298,11 @@ const String& Voyager::OTA<T_ResponseData, T_PayloadModel>::getCurrentVersion() 
 template <typename T_ResponseData, typename T_PayloadModel>
 bool Voyager::OTA<T_ResponseData, T_PayloadModel>::isNewVersion(const String& release) {
     return semver::version::parse(release.c_str(), false) > semver::version::parse(_currentVersion.c_str(), false);
+}
+
+template <typename T_ResponseData, typename T_PayloadModel>
+bool Voyager::OTA<T_ResponseData, T_PayloadModel>::isCurrentVersion(const String& release) {
+    return semver::version::parse(release.c_str(), false) == semver::version::parse(_currentVersion.c_str(), false);
 }
 
 template <typename T_ResponseData, typename T_PayloadModel>
@@ -401,6 +410,7 @@ std::optional<Voyager::VoyagerReleaseModel> Voyager::VoyagerJSONParser::parse(Vo
                                          statusCode,
                                          document["release"]["artifact"]["hash"],
                                          document["release"]["artifact"]["size"].as<int>(),
+                                         document["release"]["artifact"]["prettySize"],
                                          document["release"]["artifact"]["downloadURL"]);
 
     return payload;
