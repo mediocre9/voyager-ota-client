@@ -5,7 +5,6 @@ namespace __VoyagerApi__ {
 
     namespace Endpoints {
         String LATEST_RELEASE = "/internal/api/v1/releases/latest";
-        // namespace QueryParams
     }  // namespace Endpoints
     namespace QueryParams {
         String PRODUCTION_CHANNEL = "?channel=production";
