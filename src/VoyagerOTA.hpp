@@ -3,9 +3,8 @@
  *
  * @headerfile [VoyagerOTA.hpp]
  *
- * @description: A small client sdk built upon [HTTPUpdate] library to be
- * integrated by VoyagerOTA backend platform and flexible enough to be integrated with any backend
- * for remote OTA.
+ * @description: An easy to use small OTA client library for the VoyagerOTA
+ * platform, compatible with ESP32 and ESP8266 devices.
  *
  * @copyright (c) 2025
  * @author: fahadziakhan9@gmail.com (Fahad Zia Khan / Mediocre9)
@@ -327,7 +326,7 @@ std::optional<T_PayloadModel> Voyager::OTA<T_ResponseData, T_PayloadModel>::fetc
         return std::nullopt;
     }
   #if __ENABLE_DEVELOPMENT_MODE__
-    url = __VoyagerApi__::BASE_URL + __VoyagerApi__::Endpoints::LATEST_RELEASE + __VoyagerApi__::QueryParams::PRODUCTION_CHANNEL;
+    url = __VoyagerApi__::BASE_URL + __VoyagerApi__::Endpoints::LATEST_RELEASE + __VoyagerApi__::QueryParams::STAGING_CHANNEL;
   #else
     url = __VoyagerApi__::BASE_URL + __VoyagerApi__::Endpoints::LATEST_RELEASE + __VoyagerApi__::QueryParams::PRODUCTION_CHANNEL;
   #endif
@@ -414,6 +413,32 @@ std::optional<Voyager::VoyagerReleaseModel> Voyager::VoyagerJSONParser::parse(Vo
                                          document["release"]["artifact"]["downloadURL"]);
 
     return payload;
+}
+#endif
+
+template <typename T_ResponseData, typename T_PayloadModel>
+void Voyager::OTA<T_ResponseData, T_PayloadModel>::performUpdate() {
+    HTTPClient client;
+    if (_downloadURL.isEmpty()) {
+        Serial.print("Download URL is required!");
+        return;
+    }
+
+    bool isOK = client.begin(_downloadURL);
+
+    // TODO Add error log message.....
+    if (!isOK) {
+        return;
+    }
+
+    std::vector<Header> headers = _voyagerHeaders.empty() ? _downloadHeaders : _voyagerHeaders;
+    for (const auto [type, value] : headers) {
+        if (!client.hasHeader(type)) {
+            client.addHeader(type, value);
+        }
+    }
+
+    _otaUpdateHandler(client);
 }
 #endif
 
