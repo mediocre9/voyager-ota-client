@@ -25,6 +25,8 @@ void setup() {
     OTA<> ota(CURRENT_FIRMWARE_VERSION);
 
     ota.setCredentials("voyager-project-id-here....", "voyager-api-key-here...");
+    ota.setBaseURL("voyager-base-url.....");
+
     auto release = ota.fetchLatestRelease();
 
     if (release && ota.isNewVersion(release->version)) {
