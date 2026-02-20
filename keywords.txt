@@ -15,6 +15,7 @@ setParser	KEYWORD2
 setCredentials	KEYWORD2
 setDownloadURL	KEYWORD2
 setReleaseURL   KEYWORD2
+setBaseURL  	KEYWORD2
 isNewVersion	KEYWORD2
 isCurrentVersion	KEYWORD2
 attachEventCallbacks KEYWORD2
