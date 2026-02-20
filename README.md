@@ -210,4 +210,4 @@ void loop() {}
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/mediocre9/smart-link/blob/main/LICENSE) for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/mediocre9/voyager-ota-client/blob/main/LICENSE) for details.
