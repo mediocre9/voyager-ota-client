@@ -1,8 +1,6 @@
 #pragma once
 
 namespace __VoyagerApi__ {
-    String BASE_URL = "https://staging.api.voyagerota.com";
-
     namespace Endpoints {
         String LATEST_RELEASE = "/internal/api/v1/releases/latest";
     }  // namespace Endpoints
